@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#231f20" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;550;600;650;700;800&display=swap" rel="stylesheet" />
+    <title>XYZ Media · Catalogue Sync</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell" data-view="trends">
+      <!-- ============== LEFT NAV ============== -->
+      <aside class="nav">
+        <div class="nav-brand">
+          <img src="/xyz-logo.png" alt="XYZ Media" class="nav-logo" />
+        </div>
+
+        <nav class="nav-list">
+          <button class="nav-item active" data-target="trends">
+            <svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <span>Trends</span>
+          </button>
+          <button class="nav-item" data-target="promo">
+            <svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            <span>Promo Brands</span>
+          </button>
+          <button class="nav-item" data-target="logo">
+            <svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2 2 7l10 5 10-5-10-5z"/>
+              <polyline points="2 17 12 22 22 17"/>
+              <polyline points="2 12 12 17 22 12"/>
+            </svg>
+            <span>Logo Line</span>
+          </button>
+        </nav>
+
+        <div class="nav-footer">
+          <div id="oauth-pill" class="pill pill-loading">
+            <span class="dot"></span><span>checking…</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ============== MAIN ============== -->
+      <main class="main">
+        <!-- ============== TRENDS VIEW ============== -->
+        <section class="view view-trends" data-view-panel="trends">
+          <header class="main-header">
+            <div>
+              <h1 class="main-title">Trends</h1>
+              <p class="main-sub">Sync catalogue exports into the store.</p>
+            </div>
+            <div id="last-run-pill" class="pill" hidden>
+              <span class="dot"></span><span id="last-run-text"></span>
+            </div>
+          </header>
+
+          <!-- Upload -->
+          <section class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="eyebrow">Upload</span>
+                <h2>Add a catalogue export</h2>
+              </div>
+            </div>
+
+            <form id="upload-form" autocomplete="off">
+              <label class="dropzone" id="dropzone">
+                <input type="file" id="upload-file" name="file" accept=".csv,text/csv" class="sr-only" required />
+                <div id="dropzone-empty">
+                  <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <div class="dropzone-text">Drop CSV or <span class="browse">browse</span></div>
+                </div>
+                <div id="dropzone-selected" hidden>
+                  <div class="dropzone-file">
+                    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span id="selected-name">—</span>
+                  </div>
+                  <div class="dropzone-hint" id="selected-meta"></div>
+                  <div class="dropzone-change">click to choose another</div>
+                </div>
+              </label>
+
+              <div id="upload-meta" class="upload-meta" hidden>
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="upload-meta-text"></span>
+              </div>
+
+              <div class="row">
+                <label class="field">
+                  <span class="field-label">Month</span>
+                  <select id="upload-month" required>
+                    <option value="" disabled selected>—</option>
+                    <option>January</option><option>February</option><option>March</option>
+                    <option>April</option><option>May</option><option>June</option>
+                    <option>July</option><option>August</option><option>September</option>
+                    <option>October</option><option>November</option><option>December</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">Year</span>
+                  <input type="number" id="upload-year" min="2020" max="2099" placeholder="2026" required />
+                </label>
+                <button type="submit" id="upload-submit" class="btn btn-primary">
+                  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- Sync -->
+          <section class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="eyebrow">Sync</span>
+                <h2>Compare &amp; push</h2>
+              </div>
+            </div>
+
+            <div class="compare-pickers">
+              <div class="picker">
+                <span class="picker-tag">New</span>
+                <select id="sync-new"></select>
+                <div class="picker-meta" id="sync-new-meta">—</div>
+              </div>
+              <div class="compare-arrow">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </div>
+              <div class="picker">
+                <span class="picker-tag tag-old">Baseline</span>
+                <select id="sync-old"></select>
+                <div class="picker-meta" id="sync-old-meta">—</div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 14px;">
+              <label class="checkbox">
+                <input type="checkbox" id="sync-dry-run" />
+                <span>Dry run — preview changes only</span>
+              </label>
+            </div>
+
+            <div class="run-actions">
+              <button id="sync-btn" class="btn btn-primary btn-lg" disabled>
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Run Sync
+              </button>
+              <button id="sync-cancel" class="btn" hidden>
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12"/></svg>
+                Stop
+              </button>
+              <button id="smoke-btn" class="btn" title="Verify scopes + create one product end-to-end.">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 2v8L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45L14 10V2"/>
+                  <line x1="8" y1="2" x2="16" y2="2"/>
+                  <line x1="7" y1="16" x2="17" y2="16"/>
+                </svg>
+                Smoke test
+              </button>
+              <span id="sync-disabled-reason" class="pill pill-warn" hidden></span>
+            </div>
+          </section>
+
+          <!-- Revert -->
+          <section class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="eyebrow">Revert</span>
+                <h2>Undo changes</h2>
+              </div>
+            </div>
+
+            <div class="compare-pickers">
+              <div class="picker">
+                <span class="picker-tag tag-old">Run to revert</span>
+                <select id="revert-select"></select>
+                <div class="picker-meta" id="revert-meta">—</div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 14px;">
+              <label class="checkbox">
+                <input type="checkbox" id="revert-dry-run" />
+                <span>Dry run — preview changes only</span>
+              </label>
+            </div>
+
+            <div class="run-actions">
+              <button id="revert-btn" class="btn btn-danger" disabled>
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                Revert run
+              </button>
+              <span id="revert-disabled-reason" class="pill pill-warn" hidden></span>
+            </div>
+          </section>
+
+          <!-- Live status -->
+          <section class="card status-card" id="output-card" hidden>
+            <div class="card-header">
+              <div class="card-title">
+                <span class="eyebrow">Live</span>
+                <h2>Run status</h2>
+              </div>
+              <div id="run-status-pill" class="pill pill-loading">
+                <span class="dot"></span><span>preparing…</span>
+              </div>
+            </div>
+
+            <div class="run-meta" id="run-meta"></div>
+
+            <div class="stepper">
+              <div class="step" data-phase="diff">
+                <div class="step-dot"></div>
+                <div class="step-body">
+                  <div class="step-title">Diff CSVs</div>
+                  <div class="step-detail" id="phase-diff-detail">waiting</div>
+                </div>
+                <div class="step-time" id="phase-diff-time"></div>
+              </div>
+              <div class="step" data-phase="collections">
+                <div class="step-dot"></div>
+                <div class="step-body">
+                  <div class="step-title">Collections</div>
+                  <div class="step-detail" id="phase-collections-detail">waiting</div>
+                </div>
+                <div class="step-time" id="phase-collections-time"></div>
+              </div>
+              <div class="step" data-phase="products">
+                <div class="step-dot"></div>
+                <div class="step-body">
+                  <div class="step-title">Products &amp; prices</div>
+                  <div class="step-detail" id="phase-products-detail">waiting</div>
+                </div>
+                <div class="step-time" id="phase-products-time"></div>
+              </div>
+              <div class="step" data-phase="wrap">
+                <div class="step-dot"></div>
+                <div class="step-body">
+                  <div class="step-title">Wrap-up</div>
+                  <div class="step-detail" id="phase-wrap-detail">waiting</div>
+                </div>
+                <div class="step-time" id="phase-wrap-time"></div>
+              </div>
+            </div>
+
+            <div id="progress-wrap" class="progress-row" hidden>
+              <div class="progress-label">
+                <span><strong id="progress-text">0 / 0</strong> products</span>
+                <span style="color:var(--text-muted)" id="progress-pct">0%</span>
+              </div>
+              <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+              </div>
+            </div>
+
+            <div class="counters">
+              <div class="counter counter-created"><strong id="cnt-created" data-target="0">0</strong><span>created</span></div>
+              <div class="counter counter-updated"><strong id="cnt-updated" data-target="0">0</strong><span>updated</span></div>
+              <div class="counter counter-skipped"><strong id="cnt-skipped" data-target="0">0</strong><span>skipped</span></div>
+              <div class="counter counter-recovered"><strong id="cnt-recovered" data-target="0">0</strong><span>recovered</span></div>
+              <div class="counter counter-failed" id="counter-failed-card"><strong id="cnt-failed" data-target="0">0</strong><span>failed</span></div>
+            </div>
+
+            <div class="activity-wrap">
+              <div class="activity-header">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Recent activity</span>
+                <label class="checkbox" style="margin-left:auto">
+                  <input type="checkbox" id="activity-only-failed" />
+                  <span>only failed</span>
+                </label>
+              </div>
+              <div id="activity-list" class="activity-list">
+                <div class="activity-empty">
+                  <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  waiting for first product…
+                </div>
+              </div>
+            </div>
+
+            <details class="log-details">
+              <summary>Show full log stream</summary>
+              <pre id="log-output" class="log-output"></pre>
+            </details>
+
+            <div id="run-summary" class="run-summary" hidden></div>
+          </section>
+        </section>
+
+        <!-- ============== PROMO BRANDS (placeholder) ============== -->
+        <section class="view" data-view-panel="promo" hidden>
+          <header class="main-header">
+            <div>
+              <h1 class="main-title">Promo Brands</h1>
+              <p class="main-sub">Nothing here yet.</p>
+            </div>
+          </header>
+          <div class="placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            <h3>Promo Brands isn't wired up yet</h3>
+            <p>This space is reserved. When the workflow is ready, it'll live here.</p>
+          </div>
+        </section>
+
+        <!-- ============== LOGO LINE (placeholder) ============== -->
+        <section class="view" data-view-panel="logo" hidden>
+          <header class="main-header">
+            <div>
+              <h1 class="main-title">Logo Line</h1>
+              <p class="main-sub">Nothing here yet.</p>
+            </div>
+          </header>
+          <div class="placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2 2 7l10 5 10-5-10-5z"/>
+              <polyline points="2 17 12 22 22 17"/>
+              <polyline points="2 12 12 17 22 12"/>
+            </svg>
+            <h3>Logo Line isn't wired up yet</h3>
+            <p>This space is reserved. When the workflow is ready, it'll live here.</p>
+          </div>
+        </section>
+      </main>
+
+      <!-- ============== RIGHT SIDEBAR (Trends only) ============== -->
+      <aside class="rail" id="right-rail">
+        <div class="rail-section">
+          <div class="rail-header">
+            <span class="rail-label">Archive</span>
+            <span id="rail-files-count" class="rail-count">…</span>
+          </div>
+          <div id="rail-files-list" class="rail-files">
+            <div class="rail-empty">loading…</div>
+          </div>
+        </div>
+
+        <div class="rail-section rail-section-runs">
+          <div class="rail-header">
+            <span class="rail-label">Previous runs</span>
+            <span id="rail-runs-count" class="rail-count">…</span>
+          </div>
+          <div id="rail-runs-list" class="rail-runs">
+            <div class="rail-empty">loading…</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ============== CONFIRM MODAL (revert / wipe) ============== -->
+    <div class="modal-backdrop" id="confirm-modal" hidden>
+      <div class="modal modal-confirm" role="dialog" aria-labelledby="confirm-title" aria-modal="true">
+        <header class="modal-header">
+          <div class="modal-title-block">
+            <span class="eyebrow" id="confirm-eyebrow">—</span>
+            <h2 id="confirm-title">—</h2>
+            <p class="modal-sub" id="confirm-sub">—</p>
+          </div>
+          <button class="modal-close" id="confirm-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </header>
+        <div class="modal-body modal-body-confirm">
+          <div id="confirm-body" class="confirm-body">—</div>
+          <div id="confirm-typebox" class="confirm-typebox" hidden>
+            <label class="field">
+              <span class="field-label" id="confirm-type-label">Type to confirm</span>
+              <input type="text" id="confirm-type-input" autocomplete="off" />
+            </label>
+          </div>
+        </div>
+        <footer class="modal-footer">
+          <button class="btn" id="confirm-cancel">Cancel</button>
+          <button class="btn" id="confirm-dryrun">Dry run</button>
+          <button class="btn btn-danger" id="confirm-commit" disabled>Commit</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ============== RUN LOG MODAL ============== -->
+    <div class="modal-backdrop" id="log-modal" hidden>
+      <div class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true">
+        <header class="modal-header">
+          <div class="modal-title-block">
+            <span class="eyebrow">Run log</span>
+            <h2 id="modal-title">—</h2>
+            <p class="modal-sub" id="modal-sub">—</p>
+          </div>
+          <button class="modal-close" id="modal-close" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </header>
+        <div class="modal-body">
+          <pre class="modal-log" id="modal-log">loading…</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# OS junk
+.DS_Store
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+tokens.json
+
+# Runtime state
+state.json
+collections.json
+
+# Working CSVs (copied from archive at run time)
+new.csv
+old.csv
+changes.csv
+category_changes.csv
+
+# Uploaded CSV archive (persisted on the host's volume)
+archive/
+
+# Runtime output
+logs/
+reports/
+
+# Build
+dist/
+*.tsbuildinfo
