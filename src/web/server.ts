@@ -1,6 +1,6 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import multer from 'multer';
-import { copyFile, mkdir, readdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
+import { chmod, copyFile, mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import { createReadStream, existsSync } from 'node:fs';
 import { parse } from 'csv-parse';
 import { timingSafeEqual } from 'node:crypto';
@@ -49,6 +49,13 @@ const SmokeRequestSchema = z.object({
   newFile: z.string().regex(/^[A-Za-z]+_\d{4}\.csv$/),
   /** Optional product Code to test; otherwise picks the first NEW row in the file. */
   code: z.string().optional(),
+});
+
+const TokensSchema = z.object({
+  accessToken: z.string().min(1),
+  refreshToken: z.string().min(1),
+  expiresAt: z.number().int().positive(),
+  locationId: z.string().min(1),
 });
 
 /**
@@ -201,6 +208,31 @@ export function buildApp() {
       oauthOk = false;
     }
     res.json({ oauthOk });
+  });
+
+  // Upload a fresh tokens.json. Used after `npm run oauth-setup` locally to
+  // seed the volume on Railway without SSH. Sits behind the same Basic Auth
+  // as the rest of the dashboard.
+  app.post('/api/tokens', async (req: Request, res: Response) => {
+    const parsed = TokensSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        error: 'Invalid tokens.json shape — expected { accessToken, refreshToken, expiresAt, locationId }',
+        details: parsed.error.flatten(),
+      });
+      return;
+    }
+    try {
+      const cfg = loadConfig();
+      await mkdir(dirname(cfg.tokensFile), { recursive: true }).catch(() => {});
+      const tmp = `${cfg.tokensFile}.tmp`;
+      await writeFile(tmp, `${JSON.stringify(parsed.data, null, 2)}\n`, { mode: 0o600 });
+      await rename(tmp, cfg.tokensFile);
+      await chmod(cfg.tokensFile, 0o600).catch(() => {});
+      res.json({ ok: true, path: cfg.tokensFile });
+    } catch (err) {
+      res.status(500).json({ error: (err as Error).message });
+    }
   });
 
   app.get('/api/files', async (_req: Request, res: Response) => {
@@ -689,7 +721,6 @@ async function bootstrapTokensFromEnv(): Promise<void> {
     console.warn('GHL_TOKEN_EXPIRES_AT is not a number — skipping token bootstrap');
     return;
   }
-  const { chmod } = await import('node:fs/promises');
   await mkdir(dirname(cfg.tokensFile), { recursive: true }).catch(() => {});
   await writeFile(
     cfg.tokensFile,
