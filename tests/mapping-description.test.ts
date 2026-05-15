@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { buildDescription } from '../src/mapping/description.js';
 
 describe('buildDescription', () => {
-  test('full row has all sections', () => {
+  test('full row has all sections except pricing/additional costs', () => {
     const row = {
       Description: 'Sticky labels.',
       Colours: 'White',
@@ -34,12 +34,16 @@ describe('buildDescription', () => {
     expect(d).toContain('  - Digital Label: As shown');
     expect(d).toContain('  - Pad Print: On the front');
     expect(d).toContain('Packaging: Loose');
-    expect(d).toContain('Includes printing');
-    expect(d).toContain('Pricing tiers:');
-    expect(d).toContain('Qty 250+ — $0.21');
-    expect(d).toContain('Qty 500+ — $0.20');
     expect(d).toContain('Sizing: S / M');
     expect(d).toContain('Note: special.');
+    // Pricing-related sections must not leak into storefront descriptions.
+    expect(d).not.toContain('Includes printing');
+    expect(d).not.toContain('Pricing tiers:');
+    expect(d).not.toContain('Qty 250+');
+    expect(d).not.toContain('Qty 500+');
+    expect(d).not.toContain('Additional costs:');
+    expect(d).not.toContain('$0.21');
+    expect(d).not.toContain('Setup');
   });
 
   test('handles a sparse row with only Description', () => {

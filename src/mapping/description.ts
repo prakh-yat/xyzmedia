@@ -54,32 +54,9 @@ export function buildDescription(row: Record<string, string | undefined>): strin
   const pack = clean(row.Packing);
   if (pack) parts.push(`Packaging: ${pack}`);
 
-  // 6. PrimaryPriceDes
-  const ppd = clean(row.PrimaryPriceDes);
-  if (ppd) parts.push(ppd);
-
-  // 7. Pricing tiers (Quantity1..6 / Price1..6)
-  const tierLines: string[] = [];
-  for (let i = 1; i <= 6; i++) {
-    const q = clean(row[`Quantity${i}`]);
-    const p = clean(row[`Price${i}`]);
-    if (q && p) tierLines.push(`  Qty ${q}+ — $${p}`);
-  }
-  if (tierLines.length) parts.push(`Pricing tiers:\n${tierLines.join('\n')}`);
-
-  // 8. Additional costs (1..12)
-  const acLines: string[] = [];
-  for (let i = 1; i <= 12; i++) {
-    const desc2 = clean(row[`AdditionalCostDesc${i}`]);
-    const cost = clean(row[`AdditionalCost${i}`]);
-    const setup = clean(row[`SetupCharge${i}`]);
-    if (desc2 || cost || setup) {
-      const setupPart = setup && setup !== '0' ? ` (setup $${setup})` : '';
-      const costPart = cost ? `: $${cost}` : '';
-      acLines.push(`  - ${desc2 || 'Additional cost'}${costPart}${setupPart}`);
-    }
-  }
-  if (acLines.length) parts.push(`Additional costs:\n${acLines.join('\n')}`);
+  // PrimaryPriceDes, Pricing tiers, and Additional costs are intentionally
+  // omitted — those fields contain wholesale/setup pricing that the user does
+  // not want surfaced on storefront product descriptions.
 
   // 9. Sizing 1..3
   const sizes: string[] = [];
